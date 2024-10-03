@@ -1,0 +1,11 @@
+# Ignore everything in auth folder
+auth/*
+!auth/example_auth.yaml
+
+logs
+venv
+file_tree*
+__pycache__
+output
+
+config_tools.egg-info
