@@ -3,6 +3,7 @@ from typing import Union, Optional, Dict
 import yaml
 from .config_validator import ConfigValidator
 from .prepare_logger import prepare_logger
+from config_tools.utils import SensitiveDict, CustomJSONEncoder
 import json
 import logging
 from datetime import date, datetime
@@ -51,7 +52,7 @@ class ConfigLoader:
 
     def get_log_path(self) -> str:
         """Check for log_path in the config and validate it. Return 'logs/' folder as default if not valid."""
-        log_path = self.config.get('log_path', 'logs') if self.config else 'logs'
+        log_path = self.config.get('log_output_path', 'logs') if self.config else 'logs'
         log_path = Path(log_path)
 
         if log_path.exists():
@@ -138,28 +139,3 @@ class ConfigLoader:
         validator = ConfigValidator(self.config['auth'].get_data(), self.auth_rules)
         validator.validate()
         self.logger.info("Authentication data validated successfully")
-
-
-class SensitiveDict:
-    def __init__(self, data):
-        self._data = data
-
-    def __repr__(self):
-        return "<SensitiveDict>"
-
-    def __str__(self):
-        return self.__repr__()
-
-    def get_data(self):
-        return self._data
-    
-
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, SensitiveDict):
-            return str(obj)
-        if isinstance(obj, logging.Logger):
-            return "<Logger>"
-        if isinstance(obj, (date, datetime)):
-            return obj.strftime("%Y-%m-%d")
-        return super().default(obj)
