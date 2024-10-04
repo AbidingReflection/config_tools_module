@@ -78,7 +78,7 @@ def generate_file_tree(target_path, output_path, exclude_prefixes=None, exclude_
 
 # Example usage
 target_path = r"C:\Users\decjg\projects\config_tools_module"
-output_file_name = r"C:\Users\decjg\projects\config_tools_module\scripts\output\file_tree"
+output_file_name = r"C:\Users\decjg\projects\config_tools_module\scripts\file_tree"
 exclude_prefixes = ["file_tree_"]
 exclude_suffixes = []
 exclude_filetypes = []
