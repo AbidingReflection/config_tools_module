@@ -30,7 +30,7 @@ def prepare_logger(log_path: str, output_name_prefix="") -> Logger:
 
     # Create the logger
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)  # Capture all levels of logs
+    logger.setLevel(logging.DEBUG)
 
     # Log format with the correct timestamp format
     log_format = CustomFormatter(fmt='%(asctime)s %(levelname)s: %(message)s',
@@ -38,12 +38,12 @@ def prepare_logger(log_path: str, output_name_prefix="") -> Logger:
 
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setLevel(logging.INFO)  # Adjust as needed (INFO, DEBUG, etc.)
+    console_handler.setLevel(logging.INFO)
     console_handler.setFormatter(log_format)
 
     # File handler (RotatingFileHandler for automatic log rotation)
     file_handler = RotatingFileHandler(log_file, maxBytes=10485760, backupCount=5)
-    file_handler.setLevel(logging.DEBUG)  # Capture all logs to file
+    file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(log_format)
 
     # Add the handlers to the logger

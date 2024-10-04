@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union, List
 from datetime import datetime, date, timedelta
 import re
 
@@ -73,3 +73,19 @@ class ConfigValidator:
         # Check if the value is before the minimum date
         if value < min_date:
             raise ValueError(f"Config key '{key}' must be on or after {min_date}. Found: {value}")
+
+
+    @staticmethod
+    def validate_string_in_list(key: str, value: Union[str, List[str]], target_list: List[str]) -> None:
+        """Validate that a string or list of strings exists in a target list."""
+        
+        # Convert single string to a list for uniform processing
+        if isinstance(value, str):
+            value = [value]
+        elif not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            raise ValueError(f"Config key '{key}' must be a string or a list of strings. Found: {value}")
+        
+        # Check if all strings in the list exist in the target list
+        for item in value:
+            if item not in target_list:
+                raise ValueError(f"Config key '{key}' contains an invalid value '{item}'. Allowed values are: {target_list}")
