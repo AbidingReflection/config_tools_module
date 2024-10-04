@@ -90,7 +90,7 @@ class ConfigLoader:
             raise ValueError(f"'{path}' is not a YAML file. Must end with .yaml.")
 
     def extract_config_from_yaml(self, path: Path) -> Optional[Dict]:
-        """Extract configuration from YAML file."""
+        """Extract configuration from YAML file and normalize keys by trimming and replacing spaces with underscores."""
         try:
             with open(path, 'r') as file:
                 config_data = yaml.safe_load(file)
@@ -98,7 +98,13 @@ class ConfigLoader:
                 if not isinstance(config_data, dict):
                     raise ValueError("YAML file content is not a valid dictionary.")
                 
-                return config_data
+                # Normalize the keys by trimming whitespace and replacing spaces with underscores
+                normalized_config_data = {
+                    key.strip().replace(" ", "_"): value
+                    for key, value in config_data.items()
+                }
+
+                return normalized_config_data
 
         except yaml.YAMLError as e:
             raise ValueError(f"Error parsing YAML file: {e}")
