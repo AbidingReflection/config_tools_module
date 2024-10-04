@@ -3,6 +3,8 @@ import logging
 from datetime import date, datetime
 
 class SensitiveDict:
+    """Custom dictionary-like class for handling sensitive data."""
+    
     def __init__(self, data):
         self._data = data
 
@@ -17,6 +19,8 @@ class SensitiveDict:
     
 
 class CustomJSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder for SensitiveDict, Logger, and date/datetime objects."""
+    
     def default(self, obj):
         if isinstance(obj, SensitiveDict):
             return str(obj)
