@@ -1,4 +1,5 @@
 from typing import Dict, Any, Optional
+from datetime import datetime, timedelta
 import re
 
 class ConfigValidator:
@@ -58,3 +59,16 @@ class ConfigValidator:
         if not bearer_token_pattern.fullmatch(value):
             raise ValueError(f"Auth Config key '{key}' must be a Bearer Token in the format 'Bearer <UUID>'. Found: '{value}'")
 
+    @staticmethod
+    def validate_date(key: str, value: datetime, min_date: Optional[datetime] = None) -> None:
+        """Validate that a date falls within a valid range. Default min_date is 365 days before current date."""
+        
+        if not isinstance(value, datetime):
+            raise ValueError(f"Config key '{key}' must be a valid datetime object. Found: '{value}'")
+        
+        # Set default min_date to 365 days before current date if not provided
+        if min_date is None:
+            min_date = datetime.now() - timedelta(days=365)
+        
+        if value < min_date:
+            raise ValueError(f"Config key '{key}' must be on or after {min_date.date()}. Found: {value.date()}")
