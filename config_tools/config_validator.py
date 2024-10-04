@@ -68,7 +68,7 @@ class ConfigValidator:
         
         # Set default min_date to 365 days before current date if not provided
         if min_date is None:
-            min_date = datetime.now().date() - timedelta(days=365)
+            min_date = datetime.now().date() - timedelta(days=(365*2)+1)
         
         # Check if the value is before the minimum date
         if value < min_date:
