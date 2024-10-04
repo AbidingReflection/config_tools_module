@@ -5,12 +5,13 @@ from .config_validator import ConfigValidator
 from .prepare_logger import prepare_logger
 import json
 import logging
+from datetime import date, datetime
 
 class ConfigLoader:
     def __init__(self, config_path: Union[str, Path], config_rules=None, auth_rules=None):
         try:
             # Convert string to path if needed
-            self.config_path: Path = self.convert_str_to_path(config_path)
+            self.config_path: Path = self.ensure_path_object(config_path)
             self.validate_yaml_path(self.config_path)
             self.config: Optional[Dict] = self.extract_config_from_yaml(self.config_path)
 
@@ -40,7 +41,7 @@ class ConfigLoader:
                 auth_path = self.config['authentication_path']
                 self.load_authentication_config(auth_path)
                 self.logger.info(f"Authentication config loaded from '{auth_path}'")
-                self.logger.info(f'Config loaded successfully. Loaded config:\n {json.dumps(self.config, indent=4, cls=SensitiveDictEncoder)}')
+                self.logger.info(f'Config loaded successfully. Loaded config:\n {json.dumps(self.config, indent=4, cls=CustomJSONEncoder)}')
         
         except (FileNotFoundError, IsADirectoryError, ValueError, yaml.YAMLError) as e:
             raise e
@@ -71,12 +72,14 @@ class ConfigLoader:
         """Get the log name prefix from the config. Check for 'log_name_prefix' or 'log name prefix'."""
         return self.config.get('log_name_prefix', self.config.get('log name prefix', ''))
 
-    def convert_str_to_path(self, path_string_or_path: Union[str, Path]) -> Path:
-        """Convert a string to a Path object."""
+    def ensure_path_object(self, path_string_or_path: Union[str, Path]) -> Path:
+        """Convert a string or Path object to a Path object, normalizing paths for cross-platform compatibility."""
         if isinstance(path_string_or_path, str):
-            return Path(path_string_or_path)
+            # Normalize the path to ensure correct handling of slashes across platforms
+            normalized_path = Path(path_string_or_path).resolve()
+            return normalized_path
         elif isinstance(path_string_or_path, Path):
-            return path_string_or_path
+            return path_string_or_path.resolve()
         else:
             raise ValueError("Provided path must be a string or Path object")
 
@@ -90,7 +93,7 @@ class ConfigLoader:
             raise ValueError(f"'{path}' is not a YAML file. Must end with .yaml.")
 
     def extract_config_from_yaml(self, path: Path) -> Optional[Dict]:
-        """Extract configuration from YAML file and normalize keys by trimming and replacing spaces with underscores."""
+        """Extract configuration from a YAML file, ensuring the keys are normalized by trimming whitespace and replacing spaces with underscores."""
         try:
             with open(path, 'r') as file:
                 config_data = yaml.safe_load(file)
@@ -109,6 +112,7 @@ class ConfigLoader:
         except yaml.YAMLError as e:
             raise ValueError(f"Error parsing YAML file: {e}")
 
+
     def validate_config(self, config: Dict) -> None:
         """Validate the config using the ConfigValidator and the provided config_rules."""
         try:
@@ -117,6 +121,7 @@ class ConfigLoader:
         except ValueError as e:
             self.logger.error(f"Config validation error: {e}")
             raise ValueError(f"Config validation error: {e}")
+
 
     def load_authentication_config(self, auth_path: str) -> None:
         """Load the authentication YAML file into CONFIG["auth"] using the extract_config_from_yaml method."""
@@ -149,10 +154,12 @@ class SensitiveDict:
         return self._data
     
 
-class SensitiveDictEncoder(json.JSONEncoder):
+class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, SensitiveDict):
             return str(obj)
         if isinstance(obj, logging.Logger):
             return "<Logger>"
+        if isinstance(obj, (date, datetime)):
+            return obj.strftime("%Y-%m-%d")
         return super().default(obj)
